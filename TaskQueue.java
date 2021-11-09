@@ -19,7 +19,7 @@ public class TaskQueue {
         queue = new PriorityQueue<>(new Comparator<Task>(){
             @Override
             public int compare(Task a, Task b) {
-                return (int)(a.executionTime - b.executionTime);
+                return (int)(a.getDelay() - b.getDelay());
             }
         });
     }
@@ -33,19 +33,27 @@ public class TaskQueue {
 
                 if (!queue.isEmpty()) {
                     // then take from the queue;
-                    Task task = queue.poll();
+                    Task task = queue.peek();
+
                     long delay = task.getDelay();
                     if (delay > 0) {
                         try {
+
+                            //releasing the lock
                             condition.awaitNanos(delay);
-                            return task;
-                        }  catch (InterruptedException e) {
+
+                            // recheck what's on top (at this moment, delay should be 0 for previously
+                            // peeked task, and if there is any tasks with smaller delay, that is smaller
+                            // or equal to 0, so we don't need to wait any more)
+                            return queue.poll();
+                        } catch (InterruptedException e) {
                             // some issue/interrupt happened, then let it go and try next time
                             return null;
                         }
                     }
                     return task;
                 }
+
                 // if empty, then just wait
                 try {
                     condition.await();
