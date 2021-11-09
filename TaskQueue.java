@@ -2,6 +2,7 @@ package com.company;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,7 +41,7 @@ public class TaskQueue {
                         try {
 
                             //releasing the lock
-                            condition.awaitNanos(delay);
+                            condition.await(delay, TimeUnit.MILLISECONDS);
 
                             // recheck what's on top (at this moment, delay should be 0 for previously
                             // peeked task, and if there is any tasks with smaller delay, that is smaller
