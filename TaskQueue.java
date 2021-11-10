@@ -43,16 +43,15 @@ public class TaskQueue {
                             //releasing the lock
                             condition.await(delay, TimeUnit.MILLISECONDS);
 
-                            // recheck what's on top (at this moment, delay should be 0 for previously
-                            // peeked task, and if there is any tasks with smaller delay, that is smaller
-                            // or equal to 0, so we don't need to wait any more)
-                            return queue.poll();
+                            // here, either producer inserted something or delay has been exhausted
+                            // either case, account for newest task in the queue
+                            continue;
                         } catch (InterruptedException e) {
                             // some issue/interrupt happened, then let it go and try next time
                             return null;
                         }
                     }
-                    return task;
+                    return queue.poll();
                 }
 
                 // if empty, then just wait
